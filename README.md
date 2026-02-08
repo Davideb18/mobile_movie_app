@@ -45,15 +45,14 @@ Follow these instructions to get a copy of the project up and running on your lo
     ```
 
 3.  **Environment Configuration**
-    Create a `.env` file in the root directory and add your Appwrite credentials:
 
-    ```env
-    EXPO_PUBLIC_APPWRITE_ENDPOINT=your_endpoint
-    EXPO_PUBLIC_APPWRITE_PROJECT_ID=your_project_id
-    EXPO_PUBLIC_APPWRITE_DATABASE_ID=your_database_id
-    EXPO_PUBLIC_APPWRITE_COLLECTION_ID=your_collection_id
-    EXPO_PUBLIC_MOVIE_API_KEY=your_tmdb_api_key
+    Copy the example environment file to create your local declaration:
+
+    ```bash
+    cp .env.example .env
     ```
+
+    Then, open `.env` and fill in your Appwrite and TMDB credentials (refer to `.env.example` for the required keys).
 
 4.  **Run the app**
     ```bash
