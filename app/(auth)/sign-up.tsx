@@ -3,25 +3,32 @@ import FormField from "@/components/FormField";
 import GlassView from "@/components/GlassView";
 import { icons } from "@/constants/icons";
 import { useGlobalContext } from "@/context/GlobalProvider";
-import { getCurrentUser, signIn } from "@/services/appwrite";
+import { createUser, logout } from "@/services/appwrite";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import { Alert, Image, ScrollView, Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const SignIn = () => {
+const SignUp = () => {
   const { setUser, setIsLogged } = useGlobalContext();
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [form, setForm] = useState({
+    username: "",
     email: "",
     password: "",
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const submit = async () => {
-    if (!form.email || !form.password) {
+    try {
+      await logout();
+    } catch (e) {
+      console.log(e);
+    }
+
+    if (!form.username || !form.email || !form.password) {
       Alert.alert("Error", "Please fill in all the fields");
       return;
     }
@@ -29,13 +36,13 @@ const SignIn = () => {
     setIsSubmitting(true);
 
     try {
-      await signIn(form.email, form.password);
-      const result = await getCurrentUser();
+      const result = await createUser(form.email, form.password, form.username);
       setUser(result);
       setIsLogged(true);
 
       router.replace("/home");
     } catch (error: any) {
+      console.log("ERRORE CRITICO:", error);
       Alert.alert("Error", error.message);
     } finally {
       setIsSubmitting(false);
@@ -63,18 +70,25 @@ const SignIn = () => {
                   style={{ tintColor: "#FFFFFF" }}
                 />
                 <Text className="text-2xl text-text font-psemibold mt-6 text-center">
-                  Welcome Back
+                  Create Account
                 </Text>
                 <Text className="text-textMuted text-sm mt-2 text-center">
-                  Log in to continue your journey
+                  Join our community today
                 </Text>
               </View>
+
+              <FormField
+                title="Username"
+                value={form.username}
+                handleChangeText={(e) => setForm({ ...form, username: e })}
+                otherStyles="mt-4"
+              />
 
               <FormField
                 title="Email"
                 value={form.email}
                 handleChangeText={(e) => setForm({ ...form, email: e })}
-                otherStyles="mt-4"
+                otherStyles="mt-6"
                 keyboardType="email-address"
               />
 
@@ -86,21 +100,21 @@ const SignIn = () => {
               />
 
               <CustomButton
-                title="Sign In"
+                title="Sign Up"
                 handlePress={submit}
-                containerStyles="mt-8 w-full"
+                containerStyles="mt-8"
                 isLoading={isSubmitting}
               />
 
-              <View className="justify-center flex-row gap-2 pt-6 pb-2">
-                <Text className="text-textMuted text-base font-pregular">
-                  Don't have an account?
+              <View className="justify-center pt-6 pb-2 flex-row gap-2">
+                <Text className="text-base text-textMuted font-pregular">
+                  Already have an account?
                 </Text>
                 <Link
-                  href="/sign-up"
+                  href="/sign-in"
                   className="text-base font-psemibold text-accent"
                 >
-                  Sign Up
+                  Sign In
                 </Link>
               </View>
             </GlassView>
@@ -111,4 +125,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default SignUp;

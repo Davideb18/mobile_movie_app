@@ -1,16 +1,17 @@
 # 🎬 Mobile Movie App
 
-A powerful and beautiful mobile application for browsing and searching movies, built with **React Native**, **Expo**, and **Appwrite**.
-
-![Project Banner](https://via.placeholder.com/1200x600?text=Mobile+Movie+App+Banner)
+A powerful and beautiful mobile application for browsing, searching, and saving movies, built with **React Native**, **Expo**, and **Appwrite**.
 
 ## ✨ Features
 
+- **🌙 Premium Dark & Minimalist UI**: A sleek edge-to-edge dark theme with pure blacks, muted text, and smooth rounded corners.
+- **✨ Fluid Animations**: Physics-based slide-up forms and transitions powered by `react-native-reanimated`.
 - **🔥 Trending Movies**: View the latest popular movies with real-time updates.
-- **🔍 Smart Search**: Instantly search for movies with a responsive search bar.
-- **📱 Responsive Design**: Optimized for both iOS and Android devices.
-- **🎨 Modern UI/UX**: Built with NativeWind (TailwindCSS) for a sleek and consistent look.
-- **💾 Backend Integration**: Powered by Appwrite for robust data handling.
+- **🔍 Smart Search**: Instantly search for movies with dynamic results and categorized UI.
+- **📱 Responsive Design**: Optimized for both iOS and Android devices with native-feeling Tab Navigation.
+- **💾 Backend Integration**: Powered by Appwrite for robust user authentication and data handling.
+- **📂 Categorized Saves (Context API)**: Save movies locally in custom folders/categories (Want to Watch, Already Watched).
+- **📊 User Profile Stats**: Track watch time and total movies watched dynamically.
 
 ## 🛠️ Tech Stack
 
@@ -18,7 +19,8 @@ A powerful and beautiful mobile application for browsing and searching movies, b
 - **Styling**: [NativeWind](https://www.nativewind.dev/) (TailwindCSS)
 - **Backend Service**: [Appwrite](https://appwrite.io/)
 - **Navigation**: [Expo Router](https://docs.expo.dev/router/introduction/)
-- **Fonts**: Google Fonts
+- **State Management**: React Context API
+- **Animations**: React Native Reanimated
 
 ## 🚀 Getting Started
 
@@ -34,7 +36,7 @@ Follow these instructions to get a copy of the project up and running on your lo
 1.  **Clone the repository**
 
     ```bash
-    git clone https://github.com/YOUR_USERNAME/mobile_movie_app.git
+    git clone https://github.com/Davideb18/mobile_movie_app.git
     cd mobile_movie_app
     ```
 
@@ -56,16 +58,17 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 4.  **Run the app**
     ```bash
-    npm start
+    npx expo start
     ```
 
 ## 📂 Project Structure
 
 ```bash
 mobile_movie_app/
-├── app/                  # Application screens and routing
-├── components/           # Reusable UI components
+├── app/                  # Application screens and routing (Expo Router)
+├── components/           # Reusable UI components (GlassView, FormField, etc.)
 ├── constants/            # Global constants (icons, images, theme)
+├── context/              # React Context for state management (Global, SavedMovies)
 ├── services/             # API services (Appwrite, TMDB)
 ├── assets/               # Static assets (fonts, images)
 └── ...
