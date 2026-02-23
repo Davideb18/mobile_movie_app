@@ -2,15 +2,24 @@ import MovieCard from "@/components/MovieCard";
 import SearchBar from "@/components/SearchBar";
 import { icons } from "@/constants/icons";
 import { fetchMovies } from "@/services/api";
-import { updateSearchCount } from "@/services/appwrite";
 import useFetch from "@/services/useFetch";
 import { useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Keyboard,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const params = useLocalSearchParams<{ autoFocus?: string }>(); // Recuperiamo i parametri
+  const params = useLocalSearchParams<{ query?: string }>(); // Recuperiamo il timestamp
+  const inputRef = useRef<TextInput>(null);
 
   const {
     data: movies,
@@ -31,14 +40,43 @@ const Search = () => {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (movies?.[0] && movies?.length > 0) {
-      updateSearchCount(searchQuery, movies[0]);
+    if (params.query) {
+      setSearchQuery("");
+
+      // Wait strictly for the Tab transition to end, then focus imperatively
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 500);
+
+      return () => {
+        clearTimeout(timer);
+        Keyboard.dismiss();
+      };
     }
-  }, [movies]);
+  }, [params.query]);
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-background" style={{ paddingTop: 40 }}>
+      <TouchableOpacity activeOpacity={1} onPress={Keyboard.dismiss}>
+        <Image
+          source={icons.logo}
+          className="w-[115px] h-[35px] mt-10 mb-8 mx-auto"
+          resizeMode="contain"
+          style={{ tintColor: "#FFFFFF" }}
+        />
+      </TouchableOpacity>
+      <View className="px-5 mb-5 w-full">
+        <SearchBar
+          ref={inputRef}
+          placeHolder="Search movies..."
+          value={searchQuery}
+          onChangeText={(text: string) => setSearchQuery(text)}
+        />
+      </View>
+
       <FlatList
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         data={movies}
         renderItem={({ item }) => <MovieCard {...item} />}
         keyExtractor={(item) => item.id.toString()}
@@ -52,22 +90,6 @@ const Search = () => {
         contentContainerStyle={{ paddingBottom: 100 }}
         ListHeaderComponent={
           <>
-            <View className="w-full flex-row justify-center mt-20 items-center">
-              <Image
-                source={icons.logo}
-                className="w-12 h-10"
-                style={{ tintColor: "#FFFFFF" }}
-              />
-            </View>
-            <View className="my-5">
-              <SearchBar
-                placeHolder="Search movies..."
-                value={searchQuery}
-                onChangeText={(text: string) => setSearchQuery(text)}
-                autoFocus={params.autoFocus === "true"}
-              />
-            </View>
-
             {loading && (
               <ActivityIndicator
                 size="large"

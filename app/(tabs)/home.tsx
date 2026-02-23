@@ -2,8 +2,7 @@ import MovieCard from "@/components/MovieCard";
 import SearchBar from "@/components/SearchBar";
 import TrendingCard from "@/components/TrendingCard";
 import { icons } from "@/constants/icons";
-import { fetchMovies } from "@/services/api";
-import { getTrendingMovies } from "@/services/appwrite";
+import { fetchMovies, fetchTrendingMovies } from "@/services/api";
 import useFetch from "@/services/useFetch";
 import { useRouter } from "expo-router";
 import {
@@ -22,7 +21,7 @@ export default function Index() {
     data: trendingMovies,
     loading: trendingLoading,
     error: trendingError,
-  } = useFetch(getTrendingMovies);
+  } = useFetch(fetchTrendingMovies);
 
   const {
     data: movies,
@@ -69,7 +68,7 @@ export default function Index() {
                 onPress={() =>
                   router.push({
                     pathname: "/search",
-                    params: { autoFocus: "true" },
+                    params: { query: Date.now().toString() },
                   })
                 }
                 placeHolder="Search For a movie"
@@ -95,7 +94,7 @@ export default function Index() {
                   renderItem={({ item, index }) => (
                     <TrendingCard movie={item} index={index} />
                   )}
-                  keyExtractor={(item) => item.movie_id.toString()}
+                  keyExtractor={(item) => item.id.toString()}
                 />
 
                 <Text className="text-lg text-text font-bold mt-5 mb-5 leading-none">

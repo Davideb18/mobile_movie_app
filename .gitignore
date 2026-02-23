@@ -35,6 +35,7 @@ yarn-error.*
 .env.*
 !.env.example
 .cursorrules
+GIT_SURVIVAL_GUIDE.md
 
 # typescript
 *.tsbuildinfo

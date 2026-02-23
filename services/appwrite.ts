@@ -1,18 +1,19 @@
 // track the searches made by a user
 import {
-    Account,
-    Avatars,
-    Client,
-    Databases,
-    ID,
-    Query,
+  Account,
+  Avatars,
+  Client,
+  Databases,
+  ID,
+  Query,
 } from "react-native-appwrite";
 
 const DATABASE_ID = process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID_METRICS!;
-const COLLECTION_ID = process.env.EXPO_PUBLIC_APPWRITE_COLLECTION_ID!;
 const PROJECT_ID = process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID!;
 const USER_COLLECTION_ID =
   process.env.EXPO_PUBLIC_APPWRITE_COLLECTION_ID_USERS!;
+const SAVED_MOVIES_COLLECTION_ID =
+  process.env.EXPO_PUBLIC_APPWRITE_COLLECTION_ID_SAVED_MOVIES!;
 
 // AGGIUNGI QUESTI LOG:
 console.log("--- DEBUG APPWRITE CONFIG ---");
@@ -84,6 +85,7 @@ export const signIn = async (email: string, password: string) => {
     throw error;
   }
 };
+
 // create function to control if a user is logged in
 export const getCurrentUser = async () => {
   try {
@@ -119,60 +121,88 @@ export const logout = async () => {
   }
 };
 
-export const updateSearchCount = async (query: string, movie: Movie) => {
+// create function to save a movie to the database
+export const savemovieToAppwrite = async (
+  accountId: string,
+  movie: any,
+  category: string,
+) => {
   try {
-    // 1. Aggiungi questo:
-    console.log("----- PROVO A SALVARE SU APPWRITE -----");
-    console.log("Query:", query);
-
-    const result = await database.listDocuments(DATABASE_ID, COLLECTION_ID, [
-      Query.equal("searchTerm", query),
-    ]);
-
-    // check if a record of that search has already been stored
-    if (result.documents.length > 0) {
-      const existingMovie = result.documents[0];
-
-      await database.updateDocument(
-        DATABASE_ID,
-        COLLECTION_ID,
-        existingMovie.$id,
-        {
-          count: existingMovie.count + 1,
-        },
-      );
-    } else {
-      await database.createDocument(DATABASE_ID, COLLECTION_ID, ID.unique(), {
-        searchTerm: query,
-        movie_id: movie.id,
-        count: 1,
-        title: movie.title,
-        poster_url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
-      });
-    }
-    console.log("----- SUCCESSO! SALVATO -----");
+    const result = await database.createDocument(
+      DATABASE_ID,
+      SAVED_MOVIES_COLLECTION_ID,
+      ID.unique(),
+      {
+        accountId: accountId,
+        movieId: movie.id,
+        category: category,
+        movieDetails: JSON.stringify(movie), // convert the movie object to a string
+      },
+    );
+    return result;
   } catch (error) {
-    // 3. Se c'è un errore nascosto, lo vedrai qui:
-    console.error("----- ERRORE APPWRITE -----", error);
+    console.log("Errore salvataggio film su Appwrite", error);
     throw error;
   }
-
-  // if a document is found increment the searchCount filed
-  // if no document found
-  // create a new document in Appwrite database -> 1
 };
 
-export const getTrendingMovies = async (): Promise<
-  TrendingMovie[] | undefined
-> => {
+// create function to get the saved movies from the database
+export const getSavedMoviesFromAppwrite = async (accountId: string) => {
   try {
-    const result = await database.listDocuments(DATABASE_ID, COLLECTION_ID, [
-      Query.limit(5),
-      Query.orderDesc("count"),
-    ]);
-    return result.documents as unknown as TrendingMovie[];
+    const result = await database.listDocuments(
+      DATABASE_ID,
+      SAVED_MOVIES_COLLECTION_ID,
+      [Query.equal("accountId", accountId)],
+    );
+
+    const dictionary: Record<string, any[]> = {
+      "Want to Watch": [],
+      "Already Watched": [],
+    };
+
+    result.documents.forEach((doc) => {
+      const movieObj = JSON.parse(doc.movieDetails);
+
+      if (dictionary[doc.category]) {
+        dictionary[doc.category].push(movieObj);
+      }
+    });
+    return dictionary; // Restituiamo il dizionario bello formattato!
   } catch (error) {
-    console.log(error);
-    return undefined;
+    console.log("Errore fetch film salvati da Appwrite", error);
+    // In caso di errore, restituisci scatole vuote per non far crashare l'app
+    return { "Want to Watch": [], "Already Watched": [] };
+  }
+};
+
+// create function to remove a movie from the database
+export const removeMovieFromAppwrite = async (
+  accountId: string,
+  movieId: number,
+  category: string,
+) => {
+  try {
+    const result = await database.listDocuments(
+      DATABASE_ID,
+      SAVED_MOVIES_COLLECTION_ID,
+      [
+        Query.equal("accountId", accountId),
+        Query.equal("movieId", movieId),
+        Query.equal("category", category),
+      ],
+    );
+
+    if (result.documents.length > 0) {
+      const documentIdSecret = result.documents[0].$id;
+
+      await database.deleteDocument(
+        DATABASE_ID,
+        SAVED_MOVIES_COLLECTION_ID,
+        documentIdSecret,
+      );
+    }
+  } catch (error) {
+    console.log("Errore rimozione film da Appwrite", error);
+    throw error;
   }
 };

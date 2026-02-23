@@ -1,9 +1,18 @@
 import { icons } from "@/constants/icons";
+import { useSavedMovies } from "@/context/SavedMoviesContext";
 import { fetchMovieDetails } from "@/services/api";
 import useFetch from "@/services/useFetch";
 import { router, useLocalSearchParams } from "expo-router";
-import React from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import {
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface MovieInfoProps {
   label: string;
@@ -26,6 +35,23 @@ const MovieDetails = () => {
     fetchMovieDetails(id as string),
   );
 
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const { savedMovies, saveMovie, removeMovie } = useSavedMovies();
+
+  if (loading || !movie) {
+    return (
+      <View className="bg-surface flex-1 items-center justify-center">
+        <Text className="text-white text-lg font-bold">Loading movie...</Text>
+      </View>
+    );
+  }
+
+  // check if the movie is already saved
+  const isMovieSaved = Object.values(savedMovies).some((categoryList) =>
+    categoryList.some((m) => m.id === movie.id),
+  );
+
   return (
     <View className="bg-surface flex-1">
       {/* Piccolo handle in alto per far capire che è una modale trascinabile */}
@@ -40,6 +66,23 @@ const MovieDetails = () => {
             className="w-full h-[500px] rounded-3xl"
             resizeMode="cover"
           />
+
+          {/* the botton to saved the movies */}
+          <Pressable
+            onPress={() => setModalVisible(true)}
+            className={`absolute top-6 right-8 p-3 rounded-full border border-white/10 shadow-lg ${
+              isMovieSaved ? "bg-red-600" : "bg-surface/80"
+            }`}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.7 : 1,
+            })}
+          >
+            <Image
+              source={icons.save}
+              className="size-6"
+              style={{ tintColor: "#FFFFFF" }}
+            />
+          </Pressable>
         </View>
 
         <View className="flex-col items-start justify-center mt-6 px-5">
@@ -101,6 +144,72 @@ const MovieDetails = () => {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* This is the modal that open when you want to save a movie */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <Pressable
+          className="flex-1 justify-end"
+          onPress={() => setModalVisible(false)}
+        >
+          <Pressable className="bg-neutral-900/95 rounded-t-3xl p-6 border-t border-white/10">
+            <Text className="text-white text-2xl font-bold mb-6 text-center">
+              Add to list
+            </Text>
+
+            {Object.keys(savedMovies).map((category) => {
+              // 1. L'ispettore controlla se il film è già presente in questa categoria
+              const isSaved = savedMovies[category].some(
+                (m) => m.id === movie?.id,
+              );
+
+              return (
+                <Pressable
+                  key={category}
+                  className={`py-4 mb-3 rounded-xl border ${
+                    isSaved
+                      ? "bg-red-500/10 border-red-500"
+                      : "bg-gray-600 border-stone-200"
+                  }`}
+                  style={({ pressed }) => ({
+                    opacity: pressed ? 0.7 : 1,
+                  })}
+                  onPress={() => {
+                    // if the movie is already saved remove it passing the id in string format and the category
+                    if (isSaved) {
+                      removeMovie(movie!.id, category);
+                    } else {
+                      // else save it passing the movie and the category
+                      saveMovie(movie, category);
+                    }
+                  }}
+                >
+                  <Text
+                    className={`font-semibold text-center text-lg ${
+                      isSaved ? "text-red-500" : "text-white"
+                    }`}
+                  >
+                    {isSaved ? `Remove from ${category}` : `Add to ${category}`}
+                  </Text>
+                </Pressable>
+              );
+            })}
+
+            <TouchableOpacity
+              className="mt-6 py-4 bg-dark-100 rounded-xl"
+              onPress={() => setModalVisible(false)}
+            >
+              <Text className="text-white font-bold text-center text-lg">
+                Cancel
+              </Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 };

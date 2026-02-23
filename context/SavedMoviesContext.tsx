@@ -1,11 +1,23 @@
-import { createContext, ReactNode, useContext, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import {
+  getSavedMoviesFromAppwrite,
+  removeMovieFromAppwrite,
+  savemovieToAppwrite,
+} from "../services/appwrite";
+import { useGlobalContext } from "./GlobalProvider";
 
 interface SavedMoviesContextType {
   savedMovies: Record<string, any[]>;
 
   saveMovie: (movie: any, category: string) => void;
 
-  removeMovie: (moiveId: string, category: string) => void;
+  removeMovie: (movieId: number, category: string) => void;
 }
 
 export const SavedMoviesContext = createContext<SavedMoviesContextType | null>(
@@ -32,8 +44,25 @@ export const SavedMoviesProvider = ({ children }: SavedMoviesProviderProps) => {
     "Already Watched": [],
   });
 
+  const { user } = useGlobalContext();
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchMovies = async () => {
+      try {
+        const moviesFromCloud = await getSavedMoviesFromAppwrite(user.$id);
+
+        setSavedMovies(moviesFromCloud);
+      } catch (error) {
+        console.log("Error fetching movies on load:", error);
+      }
+    };
+    fetchMovies();
+  }, [user]);
+
   // saveMovie
-  const saveMovie = (movie: any, category: string) => {
+  const saveMovie = async (movie: any, category: string) => {
     // setSavedMovies are a function that take a callback function as an argument
     // this callback function take the previous state as an argument
     // prev is the dectionary of saved movies
@@ -54,10 +83,20 @@ export const SavedMoviesProvider = ({ children }: SavedMoviesProviderProps) => {
         [category]: [movie, ...currentCategoryList], // update the category adding the new movie and after the existing movies
       };
     });
+
+    // save to appwrite
+    if (user) {
+      try {
+        await savemovieToAppwrite(user.$id, movie, category);
+        console.log(`Movie successfully saved to Appwrite in ${category}!`);
+      } catch (error) {
+        console.log("Error saving movie to Appwrite:", error);
+      }
+    }
   };
 
   // removeMovie
-  const removeMovie = (movieId: string, category: string) => {
+  const removeMovie = async (movieId: number, category: string) => {
     setSavedMovies((prev) => {
       // get the current category list
       const currentCategoryList = prev[category] || [];
@@ -69,6 +108,16 @@ export const SavedMoviesProvider = ({ children }: SavedMoviesProviderProps) => {
         [category]: updateList,
       };
     });
+
+    // remove to appwrite
+    if (user) {
+      try {
+        await removeMovieFromAppwrite(user.$id, movieId, category);
+        console.log(`Movie successfully removed from Appwrite in ${category}!`);
+      } catch (error) {
+        console.log("Error removing movie from Appwrite:", error);
+      }
+    }
   };
 
   return (

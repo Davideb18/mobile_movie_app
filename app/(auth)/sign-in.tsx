@@ -4,15 +4,18 @@ import GlassView from "@/components/GlassView";
 import { icons } from "@/constants/icons";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import { getCurrentUser, signIn } from "@/services/appwrite";
-import { Link, router } from "expo-router";
+import { Link, Redirect, router } from "expo-router";
 import React, { useState } from "react";
 import { Alert, Image, ScrollView, Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const SignIn = () => {
-  const { setUser, setIsLogged } = useGlobalContext();
+  const { setUser, setIsLogged, isLogged, loading } = useGlobalContext();
 
+  if (!loading && isLogged) {
+    return <Redirect href="/home" />;
+  }
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [form, setForm] = useState({

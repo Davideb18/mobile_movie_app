@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- ☁️ Connected `SavedMoviesContext` to Appwrite Database to persist user's saved collections.
+- 🎨 Added visual fallback and polished centering for empty lists in the Saved Tab.
+- 🐛 Fixed active session error in Auth flow and added automatic redirection to Home.
 - 🌑 Complete overhaul to "Premium Dark Minimalist" UI Theme.
 - ✨ Implemented fluid slide-up entrance animations using `react-native-reanimated`.
 - 📁 Added `SavedMoviesContext` to handle localized movie saving logic with custom categories.
