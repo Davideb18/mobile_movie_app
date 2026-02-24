@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- ☁️ Connected `SavedMoviesContext` to Appwrite Database to persist user's saved collections.
+- 🏷️ Added full support for Custom Categories in Saved Movies.
+- 🗑️ Implemented secure category deletion with confirmation prompts to protect user data.
+- 📱 Built a smooth, animated bottom-sheet UI for creating new categories on-the-fly.
+- ♻️ Optimized category list rendering with ScrollView to prevent UI overflow on large collections.
+- ☁️ Connected `SavedMoviesContext` to Appwrite Database to persist user's saved collections dynamically.
 - 🎨 Added visual fallback and polished centering for empty lists in the Saved Tab.
 - 🐛 Fixed active session error in Auth flow and added automatic redirection to Home.
 - 🌑 Complete overhaul to "Premium Dark Minimalist" UI Theme.

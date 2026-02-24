@@ -9,8 +9,8 @@ A powerful and beautiful mobile application for browsing, searching, and saving 
 - **🔥 Trending Movies**: View the latest popular movies with real-time updates.
 - **🔍 Smart Search**: Instantly search for movies with dynamic results and categorized UI.
 - **📱 Responsive Design**: Optimized for both iOS and Android devices with native-feeling Tab Navigation.
-- **💾 Backend Integration**: Powered by Appwrite for robust user authentication and data handling.
-- **📂 Categorized Saves (Context API)**: Save movies locally in custom folders/categories (Want to Watch, Already Watched).
+- **📂 Dynamic Custom Categories**: Create, manage, and delete custom collections to save movies exactly how you want.
+- **💾 Cloud Synchronization**: Powered by Appwrite for robust real-time data handling and persistence of your collections.
 - **📊 User Profile Stats**: Track watch time and total movies watched dynamically.
 
 ## 🛠️ Tech Stack

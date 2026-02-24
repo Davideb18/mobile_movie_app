@@ -8,7 +8,7 @@ import {
   Query,
 } from "react-native-appwrite";
 
-const DATABASE_ID = process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID_METRICS!;
+const DATABASE_ID = process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!;
 const PROJECT_ID = process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID!;
 const USER_COLLECTION_ID =
   process.env.EXPO_PUBLIC_APPWRITE_COLLECTION_ID_USERS!;
@@ -161,10 +161,19 @@ export const getSavedMoviesFromAppwrite = async (accountId: string) => {
     };
 
     result.documents.forEach((doc) => {
-      const movieObj = JSON.parse(doc.movieDetails);
+      // Create the category if it doesn't exist yet
+      if (!dictionary[doc.category]) {
+        dictionary[doc.category] = [];
+      }
 
-      if (dictionary[doc.category]) {
-        dictionary[doc.category].push(movieObj);
+      // If the document has movie details, parse and add it
+      if (doc.movieDetails) {
+        try {
+          const movieObj = JSON.parse(doc.movieDetails);
+          dictionary[doc.category].push(movieObj);
+        } catch (e) {
+          console.log("Error parsing movie details for doc:", doc.$id);
+        }
       }
     });
     return dictionary; // Restituiamo il dizionario bello formattato!
@@ -203,6 +212,43 @@ export const removeMovieFromAppwrite = async (
     }
   } catch (error) {
     console.log("Errore rimozione film da Appwrite", error);
+    throw error;
+  }
+};
+
+// create function to remove an entire category from the database
+export const deleteCategoryFromAppwrite = async (
+  accountId: string,
+  category: string,
+) => {
+  try {
+    const result = await database.listDocuments(
+      DATABASE_ID,
+      SAVED_MOVIES_COLLECTION_ID,
+      [Query.equal("accountId", accountId), Query.equal("category", category)],
+    );
+
+    // Delete all matching documents in parallel
+    if (result.documents.length > 0) {
+      const deletePromises = result.documents.map((doc) =>
+        database.deleteDocument(
+          DATABASE_ID,
+          SAVED_MOVIES_COLLECTION_ID,
+          doc.$id,
+        ),
+      );
+      await Promise.all(deletePromises);
+      console.log(
+        `Successfully deleted ${result.documents.length} movies from category ${category} in Appwrite!`,
+      );
+    } else {
+      console.log(`Category ${category} was already empty in Appwrite.`);
+    }
+  } catch (error) {
+    console.log(
+      `Errore rimozione dell'intera categoria ${category} da Appwrite:`,
+      error,
+    );
     throw error;
   }
 };

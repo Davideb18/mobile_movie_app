@@ -6,10 +6,14 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
   Image,
+  Keyboard,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -37,7 +41,12 @@ const MovieDetails = () => {
 
   const [modalVisible, setModalVisible] = useState(false);
 
-  const { savedMovies, saveMovie, removeMovie } = useSavedMovies();
+  const [newCategory, setNewCategory] = useState("");
+
+  const [isCreating, setIsCreating] = useState(false);
+
+  const { savedMovies, saveMovie, removeMovie, createCategory } =
+    useSavedMovies();
 
   if (loading || !movie) {
     return (
@@ -161,43 +170,64 @@ const MovieDetails = () => {
               Add to list
             </Text>
 
-            {Object.keys(savedMovies).map((category) => {
-              // 1. L'ispettore controlla se il film è già presente in questa categoria
-              const isSaved = savedMovies[category].some(
-                (m) => m.id === movie?.id,
-              );
+            {/* Pulsante che apre il popup esterno */}
+            <Pressable
+              className="py-4 mb-6 rounded-xl border border-dashed border-stone-400 bg-transparent flex items-center justify-center"
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+              onPress={() => {
+                setModalVisible(false); // Nascondi modale list
+                setIsCreating(true); // Mostra popup input
+              }}
+            >
+              <Text className="text-gray-300 font-semibold text-lg">
+                + Create Custom Category
+              </Text>
+            </Pressable>
 
-              return (
-                <Pressable
-                  key={category}
-                  className={`py-4 mb-3 rounded-xl border ${
-                    isSaved
-                      ? "bg-red-500/10 border-red-500"
-                      : "bg-gray-600 border-stone-200"
-                  }`}
-                  style={({ pressed }) => ({
-                    opacity: pressed ? 0.7 : 1,
-                  })}
-                  onPress={() => {
-                    // if the movie is already saved remove it passing the id in string format and the category
-                    if (isSaved) {
-                      removeMovie(movie!.id, category);
-                    } else {
-                      // else save it passing the movie and the category
-                      saveMovie(movie, category);
-                    }
-                  }}
-                >
-                  <Text
-                    className={`font-semibold text-center text-lg ${
-                      isSaved ? "text-red-500" : "text-white"
+            {/* Lista Scrollabile delle categorie */}
+            <ScrollView
+              className="max-h-[350px] mb-4"
+              showsVerticalScrollIndicator={false}
+              key={Object.keys(savedMovies).length} // FORZA IL RE-RENDER IMMEDIATO quando aggiungi una categoria!
+            >
+              {Object.keys(savedMovies).map((category) => {
+                // Controlla se il film è già presente in questa categoria
+                const isSaved = savedMovies[category].some(
+                  (m) => m.id === movie?.id,
+                );
+
+                return (
+                  <Pressable
+                    key={category}
+                    className={`py-4 mb-3 rounded-xl border ${
+                      isSaved
+                        ? "bg-red-500/10 border-red-500"
+                        : "bg-gray-600 border-stone-200"
                     }`}
+                    style={({ pressed }) => ({
+                      opacity: pressed ? 0.7 : 1,
+                    })}
+                    onPress={() => {
+                      if (isSaved) {
+                        removeMovie(movie!.id, category);
+                      } else {
+                        saveMovie(movie, category);
+                      }
+                    }}
                   >
-                    {isSaved ? `Remove from ${category}` : `Add to ${category}`}
-                  </Text>
-                </Pressable>
-              );
-            })}
+                    <Text
+                      className={`font-semibold text-center text-lg ${
+                        isSaved ? "text-red-500" : "text-white"
+                      }`}
+                    >
+                      {isSaved
+                        ? `Remove from ${category}`
+                        : `Add to ${category}`}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
 
             <TouchableOpacity
               className="mt-6 py-4 bg-dark-100 rounded-xl"
@@ -210,6 +240,66 @@ const MovieDetails = () => {
           </Pressable>
         </Pressable>
       </Modal>
+
+      {/* ------------------- CREATE NEW CATEGORY POPUP (Absolute View invece di Modal) ------------------- */}
+      {isCreating && (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="absolute inset-0 z-50 flex-1 justify-center items-center bg-black/80 px-5"
+        >
+          <View className="w-full bg-surfaceLight p-6 rounded-3xl border border-white/10 shadow-2xl">
+            <Text className="text-white text-xl font-bold mb-4 text-center">
+              New Category Name
+            </Text>
+
+            <TextInput
+              className="w-full bg-gray-600 border border-stone-200 rounded-xl px-4 py-4 text-white font-semibold text-lg mb-4"
+              placeholder="e.g. Masterpieces"
+              placeholderTextColor="#A0A0A0"
+              value={newCategory}
+              onChangeText={(text) => setNewCategory(text)}
+              autoFocus={true}
+            />
+
+            <View className="flex-row gap-x-3 w-full">
+              <Pressable
+                className="flex-1 bg-dark-100 py-4 rounded-xl items-center"
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setIsCreating(false);
+                  setNewCategory("");
+                  // Un piccolo ritardo per far scendere la tastiera prima di riaprire la lista
+                  setTimeout(() => setModalVisible(true), 150);
+                }}
+              >
+                <Text className="text-white font-bold text-lg">Cancel</Text>
+              </Pressable>
+
+              <Pressable
+                className="flex-1 bg-accent py-4 rounded-xl items-center"
+                onPress={() => {
+                  console.log("Saving category:", newCategory);
+                  if (newCategory.trim() === "") {
+                    Keyboard.dismiss();
+                    setIsCreating(false);
+                    setTimeout(() => setModalVisible(true), 150);
+                    return;
+                  }
+
+                  createCategory(newCategory); // CREA LA CATEGORIA, NON SALVARE IL FILM!
+
+                  Keyboard.dismiss();
+                  setIsCreating(false);
+                  setNewCategory("");
+                  setTimeout(() => setModalVisible(true), 150);
+                }}
+              >
+                <Text className="text-white font-bold text-lg">Create</Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      )}
     </View>
   );
 };

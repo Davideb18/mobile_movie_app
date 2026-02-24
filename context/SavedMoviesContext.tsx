@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import {
+  deleteCategoryFromAppwrite,
   getSavedMoviesFromAppwrite,
   removeMovieFromAppwrite,
   savemovieToAppwrite,
@@ -18,6 +19,9 @@ interface SavedMoviesContextType {
   saveMovie: (movie: any, category: string) => void;
 
   removeMovie: (movieId: number, category: string) => void;
+  createCategory: (category: string) => void;
+
+  deleteCategory: (category: string) => void;
 }
 
 export const SavedMoviesContext = createContext<SavedMoviesContextType | null>(
@@ -120,9 +124,48 @@ export const SavedMoviesProvider = ({ children }: SavedMoviesProviderProps) => {
     }
   };
 
+  // createCategory
+  const createCategory = (category: string) => {
+    setSavedMovies((prev) => {
+      if (prev[category]) {
+        console.log(`La categoria ${category} esiste già.`);
+        return prev;
+      }
+      return {
+        ...prev,
+        [category]: [],
+      };
+    });
+  };
+
+  // deleteCategory
+  const deleteCategory = async (category: string) => {
+    setSavedMovies((prev) => {
+      // Create a shallow copy of the state
+      const newState = { ...prev };
+      // Delete the key
+      delete newState[category];
+      return newState;
+    });
+
+    if (user) {
+      try {
+        await deleteCategoryFromAppwrite(user.$id, category);
+      } catch (error) {
+        console.log("Error removing category from Appwrite:", error);
+      }
+    }
+  };
+
   return (
     <SavedMoviesContext.Provider
-      value={{ savedMovies, saveMovie, removeMovie }}
+      value={{
+        savedMovies,
+        saveMovie,
+        removeMovie,
+        createCategory,
+        deleteCategory,
+      }}
     >
       {children}
     </SavedMoviesContext.Provider>
