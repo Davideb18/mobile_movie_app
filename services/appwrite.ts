@@ -49,7 +49,7 @@ export const createUser = async (
     if (!newAccount) throw Error;
 
     // 2. Generate the URL for the avatar with the initial letters
-    const avatarUrl = avatars.getInitials(username).toString();
+    const avatarUrl = avatars.getInitialsURL(username).href;
 
     // 3. Login the user
     await signIn(email, password);
