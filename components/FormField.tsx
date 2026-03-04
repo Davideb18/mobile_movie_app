@@ -39,7 +39,7 @@ const FormField = ({
           className="flex-1 text-text font-psemibold text-base"
           value={value}
           placeholder={placeHolder}
-          placeholderTextColor="#555555" // Tailwind very dark gray
+          placeholderTextColor="#555555"
           onChangeText={handleChangeText}
           secureTextEntry={title === "Password" && !showPassword}
           {...props}
@@ -50,7 +50,7 @@ const FormField = ({
             <Ionicons
               name={!showPassword ? "eye-outline" : "eye-off-outline"}
               size={24}
-              color="#888888" // Muted gray
+              color="#888888"
             />
           </TouchableOpacity>
         )}

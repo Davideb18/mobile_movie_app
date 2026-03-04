@@ -17,7 +17,7 @@ export const fetchTrendingMovies = async (): Promise<any[]> => {
       },
     );
 
-    if (!response.ok) throw new Error("FAILED TO FETCH TRENDING MOVIES");
+    if (!response.ok) throw new Error("Failed to fetch trending movies");
 
     const data = await response.json();
     return data.results;
@@ -27,10 +27,59 @@ export const fetchTrendingMovies = async (): Promise<any[]> => {
   }
 };
 
-export const fetchMovies = async ({ query }: { query: string }) => {
-  const endpoint = query
-    ? `${TMDB_CONFIG.BASE_URL}/search/movie?query=${encodeURIComponent(query)}`
-    : `${TMDB_CONFIG.BASE_URL}/discover/movie?sort_by=popularity.desc`;
+// genre name → TMDB genre ID mapping
+const TMDB_GENRES: Record<string, number> = {
+  Action: 28,
+  Adventure: 12,
+  Animation: 16,
+  Comedy: 35,
+  Crime: 80,
+  Documentary: 99,
+  Drama: 18,
+  Family: 10751,
+  Fantasy: 14,
+  History: 36,
+  Horror: 27,
+  Music: 10402,
+  Mystery: 9648,
+  Romance: 10749,
+  ScienceFiction: 878,
+  "Science Fiction": 878,
+  "Sci-Fi": 878,
+  Scifi: 878,
+  TvMovie: 10770,
+  "TV Movie": 10770,
+  Thriller: 53,
+  War: 10752,
+  Western: 37,
+};
+
+export const fetchMovies = async ({
+  query,
+  page = 1,
+}: {
+  query: string;
+  page?: number;
+}) => {
+  let endpoint = `${TMDB_CONFIG.BASE_URL}/discover/movie?sort_by=popularity.desc&page=${page}`;
+
+  if (query) {
+    const cleanQuery = query.trim();
+    // 1. Check if the user's exact query matches a known TMDB Genre Name (case-insensitive)
+    const genreKeys = Object.keys(TMDB_GENRES);
+    const matchingGenre = genreKeys.find(
+      (g) => g.toLowerCase() === cleanQuery.toLowerCase(),
+    );
+
+    if (matchingGenre) {
+      // user typed an exact genre name, so use the genre discovery endpoint
+      const genreId = TMDB_GENRES[matchingGenre];
+      endpoint = `${TMDB_CONFIG.BASE_URL}/discover/movie?with_genres=${genreId}&sort_by=popularity.desc&page=${page}`;
+    } else {
+      // no genre match — fall back to the full-text search endpoint
+      endpoint = `${TMDB_CONFIG.BASE_URL}/search/movie?query=${encodeURIComponent(cleanQuery)}&page=${page}`;
+    }
+  }
 
   const response = await fetch(endpoint, {
     method: "GET",
@@ -38,8 +87,7 @@ export const fetchMovies = async ({ query }: { query: string }) => {
   });
 
   if (!response.ok) {
-    // @ts-ignore
-    throw new Error("FAILED TO FETCH MOVIES", response.statusText);
+    throw new Error("Failed to fetch movies");
   }
 
   const data = await response.json();
@@ -59,7 +107,7 @@ export const fetchMovieDetails = async (
       },
     );
 
-    if (!response.ok) throw new Error("FAILED TO FETCH MOVIE DETAILS");
+    if (!response.ok) throw new Error("Failed to fetch movie details");
 
     const data = await response.json();
 
@@ -69,9 +117,3 @@ export const fetchMovieDetails = async (
     throw error;
   }
 };
-
-/*fetch(url, options)
-    .then(res => res.json())
-    .then(json => console.log(json))
-    .catch(err => console.error(err));
- */

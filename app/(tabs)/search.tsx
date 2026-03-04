@@ -2,48 +2,78 @@ import MovieCard from "@/components/MovieCard";
 import SearchBar from "@/components/SearchBar";
 import { icons } from "@/constants/icons";
 import { fetchMovies } from "@/services/api";
-import useFetch from "@/services/useFetch";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  Keyboard,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    Image,
+    Keyboard,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
+let globalSearchCache = {
+  query: "",
+  movies: [] as any[],
+  hasFetched: false,
+};
+
 const Search = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const params = useLocalSearchParams<{ query?: string }>(); // Recuperiamo il timestamp
+  const [searchQuery, setSearchQuery] = useState(globalSearchCache.query);
+  const [movies, setMovies] = useState<any[]>(globalSearchCache.movies);
+  const [loading, setLoading] = useState(!globalSearchCache.hasFetched);
+  const [error, setError] = useState<Error | null>(null);
+
+  const params = useLocalSearchParams<{ query?: string }>();
   const inputRef = useRef<TextInput>(null);
 
-  const {
-    data: movies,
-    loading: loading,
-    error: error,
-    refetch: loadMovies,
-  } = useFetch(() =>
-    fetchMovies({
-      query: searchQuery,
-    }),
-  );
+  const loadMovies = async (query: string) => {
+    setLoading(true);
+    try {
+      const results = await fetchMovies({ query, page: 1 });
+      setMovies(results);
+      globalSearchCache.query = query;
+      globalSearchCache.movies = results;
+      globalSearchCache.hasFetched = true;
+    } catch (err: any) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isFirstMount = useRef(true);
 
   useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      // if we're coming back to this tab and the query hasn't changed, reuse the cached results
+      if (
+        globalSearchCache.hasFetched &&
+        searchQuery === globalSearchCache.query
+      ) {
+        setLoading(false);
+        return;
+      }
+
+      loadMovies(searchQuery);
+      return;
+    }
+
     const timeoutId = setTimeout(async () => {
-      await loadMovies();
+      await loadMovies(searchQuery);
     }, 500);
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
 
   useEffect(() => {
     if (params.query) {
-      setSearchQuery("");
+      setSearchQuery(params.query);
 
-      // Wait strictly for the Tab transition to end, then focus imperatively
+      // wait for the tab transition to finish before focusing the input
       const timer = setTimeout(() => {
         inputRef.current?.focus();
       }, 500);

@@ -7,11 +7,12 @@ A powerful and beautiful mobile application for browsing, searching, and saving 
 - **🌙 Premium Dark & Minimalist UI**: A sleek edge-to-edge dark theme with pure blacks, muted text, and smooth rounded corners.
 - **✨ Fluid Animations**: Physics-based slide-up forms and transitions powered by `react-native-reanimated`.
 - **🔥 Trending Movies**: View the latest popular movies with real-time updates.
-- **🔍 Smart Search**: Instantly search for movies with dynamic results and categorized UI.
+- **🔍 Smart Search**: Instantly search for movies by title or genre, with results cached between tab switches.
 - **📱 Responsive Design**: Optimized for both iOS and Android devices with native-feeling Tab Navigation.
 - **📂 Dynamic Custom Categories**: Create, manage, and delete custom collections to save movies exactly how you want.
 - **💾 Cloud Synchronization**: Powered by Appwrite for robust real-time data handling and persistence of your collections.
-- **📊 User Profile Stats**: Track watch time and total movies watched dynamically.
+- **📊 User Profile & Stats**: Track total and monthly watch time, and browse your top genres with direct search links.
+- **⚡ Aggressive Caching**: Images are cached via `expo-image`, routes are prefetched on render, and search state persists across tab navigation.
 
 ## 🛠️ Tech Stack
 

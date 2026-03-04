@@ -6,7 +6,7 @@ import { Image, Text, TouchableOpacity, View } from "react-native";
 
 const TrendingCard = ({ movie: { id, title, poster_path }, index }: any) => {
   return (
-    <Link href={`/movies/${id}`} asChild>
+    <Link href={`/movies/${id}`} asChild prefetch={true}>
       <TouchableOpacity className="w-32 relative pl-5">
         <Image
           source={{

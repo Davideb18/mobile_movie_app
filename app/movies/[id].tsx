@@ -56,14 +56,14 @@ const MovieDetails = () => {
     );
   }
 
-  // check if the movie is already saved
+  // check if this movie is already in one of the user's lists
   const isMovieSaved = Object.values(savedMovies).some((categoryList) =>
     categoryList.some((m) => m.id === movie.id),
   );
 
   return (
     <View className="bg-surface flex-1">
-      {/* Piccolo handle in alto per far capire che è una modale trascinabile */}
+      {/* drag handle at the top */}
       <View className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-3 mb-2" />
 
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
@@ -72,11 +72,11 @@ const MovieDetails = () => {
             source={{
               uri: `https://image.tmdb.org/t/p/w500${movie?.poster_path}`,
             }}
-            className="w-full h-[500px] rounded-3xl"
+            style={{ width: "100%", height: 500, borderRadius: 24 }}
             resizeMode="cover"
           />
 
-          {/* the botton to saved the movies */}
+          {/* save button — turns red when the movie is already saved */}
           <Pressable
             onPress={() => setModalVisible(true)}
             className={`absolute top-6 right-8 p-3 rounded-full border border-white/10 shadow-lg ${
@@ -88,8 +88,7 @@ const MovieDetails = () => {
           >
             <Image
               source={icons.save}
-              className="size-6"
-              style={{ tintColor: "#FFFFFF" }}
+              style={{ width: 24, height: 24, tintColor: "#FFFFFF" }}
             />
           </Pressable>
         </View>
@@ -107,7 +106,11 @@ const MovieDetails = () => {
           </View>
 
           <View className="flex-row items-center bg-surfaceLight px-3 py-1.5 rounded-xl gap-x-2 mt-4 border border-white/5">
-            <Image source={icons.star} className="size-4" />
+            <Image
+              source={icons.star}
+              style={{ width: 16, height: 16 }}
+              resizeMode="contain"
+            />
             <Text className="text-text font-bold text-sm">
               {Math.round(movie?.vote_average ?? 0)}/10
             </Text>
@@ -154,7 +157,7 @@ const MovieDetails = () => {
         </TouchableOpacity>
       </View>
 
-      {/* This is the modal that open when you want to save a movie */}
+      {/* bottom sheet modal for picking which list to add the movie to */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -170,13 +173,13 @@ const MovieDetails = () => {
               Add to list
             </Text>
 
-            {/* Pulsante che apre il popup esterno */}
+            {/* opens the category creation input, hiding this list first */}
             <Pressable
               className="py-4 mb-6 rounded-xl border border-dashed border-stone-400 bg-transparent flex items-center justify-center"
               style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
               onPress={() => {
-                setModalVisible(false); // Nascondi modale list
-                setIsCreating(true); // Mostra popup input
+                setModalVisible(false);
+                setIsCreating(true);
               }}
             >
               <Text className="text-gray-300 font-semibold text-lg">
@@ -184,14 +187,14 @@ const MovieDetails = () => {
               </Text>
             </Pressable>
 
-            {/* Lista Scrollabile delle categorie */}
+            {/* scrollable list of the user's categories */}
             <ScrollView
               className="max-h-[350px] mb-4"
               showsVerticalScrollIndicator={false}
-              key={Object.keys(savedMovies).length} // FORZA IL RE-RENDER IMMEDIATO quando aggiungi una categoria!
+              key={Object.keys(savedMovies).length} // key changes when a new category is added, forcing a re-render
             >
               {Object.keys(savedMovies).map((category) => {
-                // Controlla se il film è già presente in questa categoria
+                // check if this movie is already in the current category
                 const isSaved = savedMovies[category].some(
                   (m) => m.id === movie?.id,
                 );
@@ -241,7 +244,7 @@ const MovieDetails = () => {
         </Pressable>
       </Modal>
 
-      {/* ------------------- CREATE NEW CATEGORY POPUP (Absolute View invece di Modal) ------------------- */}
+      {/* new category input — rendered as an absolute overlay instead of a nested Modal to avoid stacking issues */}
       {isCreating && (
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -268,7 +271,7 @@ const MovieDetails = () => {
                   Keyboard.dismiss();
                   setIsCreating(false);
                   setNewCategory("");
-                  // Un piccolo ritardo per far scendere la tastiera prima di riaprire la lista
+                  // small delay to let the keyboard dismiss before reopening the list
                   setTimeout(() => setModalVisible(true), 150);
                 }}
               >
@@ -278,7 +281,6 @@ const MovieDetails = () => {
               <Pressable
                 className="flex-1 bg-accent py-4 rounded-xl items-center"
                 onPress={() => {
-                  console.log("Saving category:", newCategory);
                   if (newCategory.trim() === "") {
                     Keyboard.dismiss();
                     setIsCreating(false);
@@ -286,7 +288,7 @@ const MovieDetails = () => {
                     return;
                   }
 
-                  createCategory(newCategory); // CREA LA CATEGORIA, NON SALVARE IL FILM!
+                  createCategory(newCategory);
 
                   Keyboard.dismiss();
                   setIsCreating(false);

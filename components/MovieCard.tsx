@@ -11,7 +11,7 @@ const MovieCard = ({
   release_date,
 }: any) => {
   return (
-    <Link href={`/movies/${id}`} asChild>
+    <Link href={`/movies/${id}`} asChild prefetch={true}>
       <TouchableOpacity className="w-[30%]">
         <Image
           source={{
@@ -37,9 +37,6 @@ const MovieCard = ({
           <Text className="text-xs text-textMuted font-medium mt-1">
             {release_date?.split("-")[0]}
           </Text>
-          {/*<Text className="text-xs text-light-300 font-medium uppercase">
-                                Movie
-                            </Text>*/}
         </View>
       </TouchableOpacity>
     </Link>

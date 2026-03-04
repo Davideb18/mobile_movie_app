@@ -1,23 +1,36 @@
 import { useGlobalContext } from "@/context/GlobalProvider";
 import {
-  avatars,
-  getSavedMoviesFromAppwrite,
-  logout,
+    avatars,
+    getSavedMoviesFromAppwrite,
+    logout,
 } from "@/services/appwrite";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
-  ActivityIndicator,
-  Image,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Dimensions,
+    FlatList,
+    Image,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 const Profile = () => {
   const { user, setUser, setIsLogged } = useGlobalContext();
+  const { width: screenWidth } = Dimensions.get("window");
+
+  const last12Months = Array.from({ length: 12 }).map((_, i) => {
+    const d = new Date();
+    d.setDate(1); // avoid edge cases like Feb 30th when subtracting months
+    d.setMonth(d.getMonth() - i);
+    return {
+      key: `${d.getFullYear()}-${d.getMonth() + 1}`,
+      label: d.toLocaleString("default", { month: "long", year: "numeric" }),
+    };
+  });
 
   const [stats, setStats] = useState({
     totalWatchTime: 0,
@@ -29,14 +42,16 @@ const Profile = () => {
 
   useFocusEffect(
     useCallback(() => {
-      // 1. Definiamo la funzione asincrona che farà il lavoro sporco
       const fetchStats = async () => {
-        if (!user?.$id) return; // Se l'utente non c'è, spegni il motore
+        if (!user?.$id) return;
 
-        setLoading(true); // Accendiamo la rotellina di caricamento
+        // only show the spinner on the very first load; after that, refresh silently in the background
+        if (stats.totalWatchTime === 0) {
+          setLoading(true);
+        }
 
         try {
-          // 1. Recuperiamo i dati da Appwrite
+          // pull saved movies from Appwrite
           const moviesDict = await getSavedMoviesFromAppwrite(user.$id);
           const alreadyWatched = moviesDict["Already Watched"] || [];
           const allMovies = [
@@ -44,12 +59,22 @@ const Profile = () => {
             ...alreadyWatched,
           ];
 
-          // 2. Calcoliamo il tempo totale di visione (solo film già visti)
-          const totalWatchTime = alreadyWatched.reduce((sum, film) => {
-            return sum + (film.runtime || 0);
-          }, 0);
+          // calculate total watch time and per-month breakdown (watched-only)
+          let totalWatchTime = 0;
+          const monthlyWatchTime: Record<string, number> = {};
 
-          // 3. Calcoliamo i generi preferiti
+          alreadyWatched.forEach((film) => {
+            totalWatchTime += film.runtime || 0;
+
+            if (film.$createdAt) {
+              const date = new Date(film.$createdAt);
+              const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+              monthlyWatchTime[monthKey] =
+                (monthlyWatchTime[monthKey] || 0) + (film.runtime || 0);
+            }
+          });
+
+          // count genre occurrences across all lists
           const genreCounts: Record<string, number> = {};
           allMovies.forEach((film) => {
             if (film.genres && Array.isArray(film.genres)) {
@@ -60,26 +85,24 @@ const Profile = () => {
             }
           });
 
-          // 4. Ordiniamo i generi per frequenza
+          // sort genres by how often they appear
           const sortedGenresArray = Object.entries(genreCounts)
-            .sort((a, b) => b[1] - a[1]) // ordina per conteggio decrescente
-            .map((entry) => entry[0]); // prendiamo solo il nome del genere
+            .sort((a, b) => b[1] - a[1])
+            .map((entry) => entry[0]);
 
-          // 5. Aggiorniamo lo stato con i dati calcolati
+          // write back to state
           setStats({
             totalWatchTime: totalWatchTime,
-            monthlyWatchTime: {} as Record<string, number>,
+            monthlyWatchTime: monthlyWatchTime,
             topGenres: sortedGenresArray,
           });
         } catch (error) {
-          console.log("Errore nel calcolo delle statistiche:", error);
         } finally {
-          setLoading(false); // Qualsiasi cosa succeda, spegniamo la rotellina
+          setLoading(false);
         }
       };
-      // 2. Facciamo partire la funzione che abbiamo appena definito
       fetchStats();
-    }, [user?.$id]), // Il motore si ricrea solo se cambia l'ID dell'utente
+    }, [user?.$id]),
   );
 
   const formatTime = (minutes: number) => {
@@ -96,11 +119,10 @@ const Profile = () => {
     router.replace("/sign-in");
   };
 
-  console.log("Dati utente completo:", JSON.stringify(user, null, 2));
   return (
     <ScrollView
       className="bg-background flex-1"
-      contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }}
     >
       <View className="w-full justify-center items-center px-4 mt-20">
         <View className="w-24 h-24 border border-white/10 rounded-full justify-center items-center bg-surfaceLight">
@@ -131,72 +153,102 @@ const Profile = () => {
             <ActivityIndicator size="large" color="#FF3D71" className="mt-4" />
           ) : (
             <View className="flex-col gap-4">
-              {/* Le due Card Alte in Riga affiancate */}
-              <View className="flex-row justify-between gap-4">
-                {/* 1. Prima Scheda (Sinistra): Tempo Totale */}
-                <View className="flex-1 bg-surfaceLight border border-white/5 rounded-2xl p-4 items-center">
-                  <Ionicons name="time-outline" size={28} color="#FF3D71" />
-                  <Text className="text-text/70 text-sm mt-2 font-pregular">
+              {/* watch time cards */}
+              <View className="flex-col gap-4 w-full">
+                {/* total watch time */}
+                <View className="w-full bg-surfaceLight border border-white/5 rounded-2xl p-6 items-center">
+                  <Ionicons name="time-outline" size={32} color="#FF3D71" />
+                  <Text className="text-text/70 text-base mt-2 font-pregular">
                     Total Time
                   </Text>
-
-                  {/* ECCO LA MAGIA: Pesca dallo stato e formatta */}
-                  <Text className="text-text text-lg font-psemibold mt-1">
+                  <Text className="text-text text-2xl font-psemibold mt-1">
                     {formatTime(stats.totalWatchTime)}
                   </Text>
                 </View>
 
-                {/* 2. Seconda Scheda (Destra): Tempo del Mese in corso */}
-                <View className="flex-1 bg-surfaceLight border border-white/5 rounded-2xl p-4 items-center">
-                  <Ionicons name="calendar-outline" size={28} color="#00C896" />
-                  <Text className="text-text/70 text-sm mt-2 font-pregular">
-                    This Month
-                  </Text>
-
-                  {/* SECONDA MAGIA: */}
-                  <Text className="text-text text-lg font-psemibold mt-1">
-                    {formatTime(
-                      stats.monthlyWatchTime[
-                        `${new Date().getFullYear()}-${new Date().getMonth() + 1}`
-                      ] || 0,
-                    )}
-
-                    {/* Box dei Generi Top */}
-                    <View className="bg-surfaceLight border border-white/5 rounded-2xl p-4 mt-2">
-                      <View className="flex-row items-center mb-3">
+                {/* monthly breakdown — horizontal paging */}
+                <View className="w-full bg-surfaceLight border border-white/5 rounded-2xl py-6 items-center overflow-hidden">
+                  <FlatList
+                    data={last12Months}
+                    keyExtractor={(item) => item.key}
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    getItemLayout={(_, index) => ({
+                      length: screenWidth - 32,
+                      offset: (screenWidth - 32) * index,
+                      index,
+                    })}
+                    renderItem={({ item }) => (
+                      <View
+                        style={{ width: screenWidth - 32 }}
+                        className="items-center px-4"
+                      >
                         <Ionicons
-                          name="star-outline"
-                          size={24}
-                          color="#FFD700"
+                          name="calendar-outline"
+                          size={32}
+                          color="#00C896"
                         />
-                        <Text className="text-text font-psemibold text-base ml-2">
-                          Top Genres
+                        <Text className="text-text/70 text-base mt-2 font-pregular">
+                          {item.label}
+                        </Text>
+                        <Text className="text-text text-2xl font-psemibold mt-1">
+                          {formatTime(stats.monthlyWatchTime[item.key] || 0)}
                         </Text>
                       </View>
+                    )}
+                  />
+                  {/* swipe hint */}
+                  <View className="flex-row items-center mt-3 opacity-50">
+                    <Ionicons name="chevron-back" size={16} color="#ffffff" />
+                    <Text className="text-text/50 text-xs px-2 font-pregular">
+                      Swipe months
+                    </Text>
+                    <Ionicons
+                      name="chevron-forward"
+                      size={16}
+                      color="#ffffff"
+                    />
+                  </View>
+                </View>
+              </View>
 
-                      {/* JSX CONDIZIONALE: Se l'array ha elementi, usa il .map per disegnarne uno a caso, sennò mostra testo */}
-                      {stats.topGenres.length > 0 ? (
-                        <View className="flex-row flex-wrap gap-2">
-                          {/* .map() funziona come il forEach, ma in JSX dice: "Per ogni genere, disegna un View" */}
-                          {stats.topGenres.map((genre, index) => (
-                            <View
-                              key={index}
-                              className="bg-white/10 px-3 py-1 rounded-full"
-                            >
-                              <Text className="text-text text-sm font-pregular">
-                                {index + 1}. {genre}
-                              </Text>
-                            </View>
-                          ))}
-                        </View>
-                      ) : (
-                        <Text className="text-text/50 font-pregular">
-                          No genres watched yet.
-                        </Text>
-                      )}
-                    </View>
+              {/* top genres */}
+              <View className="w-full bg-surfaceLight border border-white/5 rounded-2xl p-4 mt-2">
+                <View className="flex-row items-center mb-3">
+                  <Ionicons name="star-outline" size={24} color="#FFD700" />
+                  <Text className="text-text font-psemibold text-base ml-2">
+                    Top Genres
                   </Text>
                 </View>
+
+                {stats.topGenres.length > 0 ? (
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ gap: 12, paddingHorizontal: 4 }}
+                  >
+                    {stats.topGenres.slice(0, 5).map((genre, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() =>
+                          router.push(
+                            `/search?query=${encodeURIComponent(genre)}`,
+                          )
+                        }
+                        className="bg-white/10 px-4 py-1.5 rounded-full border border-white/5 justify-center"
+                      >
+                        <Text className="text-text text-sm font-pregular whitespace-nowrap">
+                          {index + 1}. {genre}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                ) : (
+                  <Text className="text-text/50 font-pregular">
+                    No genres watched yet.
+                  </Text>
+                )}
               </View>
             </View>
           )}
@@ -207,6 +259,9 @@ const Profile = () => {
             <Text className="text-accent font-psemibold text-lg">Log Out</Text>
           </View>
         </TouchableOpacity>
+
+        {/* extra bottom space so the logout button clears the tab bar */}
+        <View className="w-full h-24 mb-12" />
       </View>
     </ScrollView>
   );

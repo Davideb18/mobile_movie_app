@@ -25,7 +25,7 @@ const SignUp = () => {
     try {
       await logout();
     } catch (e) {
-      console.log(e);
+      // clear any stale session before creating a new account
     }
 
     if (!form.username || !form.email || !form.password) {
@@ -42,7 +42,6 @@ const SignUp = () => {
 
       router.replace("/home");
     } catch (error: any) {
-      console.log("ERRORE CRITICO:", error);
       Alert.alert("Error", error.message);
     } finally {
       setIsSubmitting(false);

@@ -22,6 +22,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 📱 Refactored internal screens (Home, Search, Saved, Profile) with pure black backgrounds and cohesive design.
 - 🎬 Rebuilt `movies/[id].tsx` Details screen as a sliding bottom sheet modal.
 
+## [1.2.0] - 2026-03-04
+
+### Added
+
+- 🖼️ Migrated image rendering to `expo-image` for automatic memory and disk caching across the app.
+- ⚡ Added `prefetch={true}` to `MovieCard` and `TrendingCard` links for instant route transitions.
+- 💾 Implemented module-level search cache (`globalSearchCache`) in `search.tsx` to preserve results between tab switches.
+- 📊 Profile page now displays per-month watch time in a horizontally scrollable card with swipe hint.
+- 🎭 Top Genres section on Profile now links to filtered search results when tapped.
+
+### Changed
+
+- 🔇 Removed all debug `console.log` statements across the codebase (`appwrite.ts`, `GlobalProvider.tsx`, `SavedMoviesContext.tsx`, `sign-up.tsx`).
+- ✏️ Rewrote all code comments to be concise, English, and consistent throughout the project.
+- 🧹 Removed leftover commented-out JSX and dead code fragments.
+- 🔠 Normalized error message strings (removed all-caps formatting from `api.ts`).
+- 🗑️ Dropped stale header comments from `useFetch.ts`.
+
 ## [1.1.0] - 2024-02-21
 
 ### Added
