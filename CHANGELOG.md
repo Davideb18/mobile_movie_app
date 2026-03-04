@@ -50,7 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🔒 Protected routes — unauthenticated users are redirected to Sign-in.
 - 🚪 Logout functionality that clears session and resets auth state.
 
-## [1.0.0] - 2024-02-08
+## [1.0.0] - 2026-02-08
 
 ### Added
 
