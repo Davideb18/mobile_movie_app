@@ -38,12 +38,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 📁 Added `SavedMoviesContext` for localized movie saving logic with custom categories.
 - 🎬 Rebuilt `movies/[id].tsx` Details screen as a sliding bottom sheet modal.
 
-## [1.1.0] - 2024-02-21
+## [1.1.0] - 2026-02-21
 
 ### Added
 
-- 🔐 Login and Sign-up screens structure.
-- 👤 User authentication context.
+- 🔐 Sign-in screen with email/password authentication via Appwrite.
+- 📝 Sign-up screen with username, email, and password fields.
+- 👤 `GlobalProvider` context to manage auth state (`user`, `isLogged`, `loading`) app-wide.
+- 🔄 Automatic session restore on app launch — redirects logged-in users to Home without re-entering credentials.
+- �️ Avatar auto-generated from user initials via Appwrite Avatars API as fallback when no profile image is set.
+- 🔒 Protected routes — unauthenticated users are redirected to Sign-in.
+- 🚪 Logout functionality that clears session and resets auth state.
 
 ## [1.0.0] - 2024-02-08
 
