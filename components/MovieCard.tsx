@@ -9,10 +9,11 @@ const MovieCard = ({
   title,
   vote_average,
   release_date,
+  className,
 }: any) => {
   return (
     <Link href={`/movies/${id}`} asChild prefetch={true}>
-      <TouchableOpacity className="w-[30%]">
+      <TouchableOpacity className={className || "w-[30%]"}>
         <Image
           source={{
             uri: poster_path

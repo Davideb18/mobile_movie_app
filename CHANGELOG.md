@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-03-05
+
+### Added
+
+- 🤖 **AI Vibe Search** — new AI-powered search bar that accepts natural language descriptions (in Italian or English) and uses the Google Gemini API to recommend the best matching movies.
+- 🌍 **Multilingual AI support** — the Gemini prompt now explicitly handles Italian queries, translating intent into TMDB-compatible English movie titles automatically.
+- 🎨 **Structured AI results UI** — AI search results show a large hero card for the top pick (with a Gemini-generated explanation of why it matches the vibe), plus a horizontal scroll list of 9 alternative suggestions.
+- 🖱️ **Clickable AI top pick card** — tapping the hero card navigates to the full movie detail page, consistent with `MovieCard` behaviour.
+- ✕ **Clear button in search bars** — a dismiss button appears inside any `SearchBar` when text is present, allowing one-tap clearing.
+- 📏 **Multiline AI search bar** — the AI search input expands vertically to accommodate long vibe descriptions without hiding text.
+- 🔁 **AnimatedAIBorder** — rotating Google-colors gradient border animation wrapping the AI search bar, indicating it's AI-powered.
+
+### Changed
+
+- ⚡ `fetchMovieByTitle` now returns the top TMDB match for a given title, used by the AI pipeline.
+- 📐 `MovieCard` accepts an optional `className` prop to override its default width, enabling correct rendering inside horizontal scroll lists.
+- 🗑️ Removed dead `onClear` prop from `SearchBar` component interface — clear functionality is handled directly via `onChangeText`.
+
+### Fixed
+
+- 💰 Budget and Revenue on movie detail page now display `N/A` when TMDB returns zero or missing values, instead of showing `$0M` or `$0.05M`.
+- 🎬 Horizontal "Also Consider" movie cards no longer appear squished — they now use a fixed width wrapper with `w-full` inside.
+
 ## [1.3.0] - 2026-03-04
 
 ### Added

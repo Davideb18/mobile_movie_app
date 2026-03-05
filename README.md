@@ -1,6 +1,6 @@
 # 🎬 Mobile Movie App
 
-A powerful and beautiful mobile application for browsing, searching, and saving movies, built with **React Native**, **Expo**, and **Appwrite**.
+A powerful and beautiful mobile application for browsing, searching, and saving movies, built with **React Native**, **Expo**, **Appwrite**, and **Google Gemini AI**.
 
 ## ✨ Features
 
@@ -8,6 +8,7 @@ A powerful and beautiful mobile application for browsing, searching, and saving 
 - **✨ Fluid Animations**: Physics-based slide-up forms and transitions powered by `react-native-reanimated`.
 - **🔥 Trending Movies**: View the latest popular movies with real-time updates.
 - **🔍 Smart Search**: Instantly search for movies by title or genre, with results cached between tab switches.
+- **🤖 AI Vibe Search**: Describe a scene, mood, or vibe in natural language (Italian or English), and Google Gemini recommends the perfect match — complete with a tailored explanation and 9 alternative picks.
 - **📱 Responsive Design**: Optimized for both iOS and Android devices with native-feeling Tab Navigation.
 - **📂 Dynamic Custom Categories**: Create, manage, and delete custom collections to save movies exactly how you want.
 - **💾 Cloud Synchronization**: Powered by Appwrite for robust real-time data handling and persistence of your collections.
@@ -20,6 +21,8 @@ A powerful and beautiful mobile application for browsing, searching, and saving 
 - **Styling**: [NativeWind](https://www.nativewind.dev/) (TailwindCSS)
 - **Backend Service**: [Appwrite](https://appwrite.io/)
 - **Navigation**: [Expo Router](https://docs.expo.dev/router/introduction/)
+- **AI**: [Google Gemini API](https://aistudio.google.com/)
+- **Movie Data**: [TMDB API](https://developer.themoviedb.org/)
 - **State Management**: React Context API
 - **Animations**: React Native Reanimated
 
@@ -55,7 +58,10 @@ Follow these instructions to get a copy of the project up and running on your lo
     cp .env.example .env
     ```
 
-    Then, open `.env` and fill in your Appwrite and TMDB credentials (refer to `.env.example` for the required keys).
+    Then, open `.env` and fill in your credentials:
+    - `EXPO_PUBLIC_MOVIE_API_KEY` — from [TMDB](https://developer.themoviedb.org/)
+    - `EXPO_PUBLIC_GEMINI_API_KEY` — from [Google AI Studio](https://aistudio.google.com/) (free tier available)
+    - Appwrite credentials (refer to `.env.example` for all required keys)
 
 4.  **Run the app**
     ```bash

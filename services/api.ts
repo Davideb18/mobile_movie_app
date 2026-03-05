@@ -117,3 +117,22 @@ export const fetchMovieDetails = async (
     throw error;
   }
 };
+
+export const fetchMovieByTitle = async (title: string): Promise<any> => {
+  try {
+    const endpoint = `${TMDB_CONFIG.BASE_URL}/search/movie?query=${encodeURIComponent(title)}&page=1`;
+    const response = await fetch(endpoint, {
+      method: "GET",
+      headers: TMDB_CONFIG.header,
+    });
+
+    if (!response.ok)
+      throw new Error(`Failed to fetch movie by title: ${title}`);
+
+    const data = await response.json();
+    return data.results?.[0] || null; // return the top match
+  } catch (error) {
+    console.error("Error fetching movie by title:", error);
+    return null;
+  }
+};

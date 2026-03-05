@@ -128,11 +128,19 @@ const MovieDetails = () => {
           <View className="flex flex-row justify-between w-[90%] flex-wrap">
             <MovieInfo
               label="Budget"
-              value={`$${(movie?.budget || 0) / 1_000_000}M`}
+              value={
+                movie?.budget && movie.budget > 0
+                  ? `$${Math.round(movie.budget / 1_000_000)}M`
+                  : "N/A"
+              }
             />
             <MovieInfo
               label="Revenue"
-              value={`$${Math.round((movie?.revenue || 0) / 1_000_000)}M`}
+              value={
+                movie?.revenue && movie.revenue > 0
+                  ? `$${Math.round(movie.revenue / 1_000_000)}M`
+                  : "N/A"
+              }
             />
           </View>
 
