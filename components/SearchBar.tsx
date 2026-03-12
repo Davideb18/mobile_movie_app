@@ -10,6 +10,8 @@ interface Props {
   onSubmitEditing?: () => void;
   autoFocus?: boolean;
   multiline?: boolean;
+  returnKeyType?: import("react-native").ReturnKeyTypeOptions;
+  onClear?: () => void;
 }
 
 const SearchBar = forwardRef<TextInput, Props>(
@@ -22,6 +24,8 @@ const SearchBar = forwardRef<TextInput, Props>(
       onSubmitEditing,
       autoFocus = false,
       multiline = false,
+      returnKeyType = "default",
+      onClear,
     },
     ref,
   ) => {
@@ -45,12 +49,15 @@ const SearchBar = forwardRef<TextInput, Props>(
           autoFocus={autoFocus}
           editable={onPress ? false : true}
           multiline={multiline}
-          blurOnSubmit={multiline ? true : false}
+          returnKeyType={returnKeyType}
         />
 
         {value && value.length > 0 && onChangeText && !onPress && (
           <TouchableOpacity
-            onPress={() => onChangeText("")}
+            onPress={() => {
+              onChangeText("");
+              onClear?.();
+            }}
             className="ml-2 p-1"
           >
             <Text className="text-gray-400 text-lg font-bold">✕</Text>

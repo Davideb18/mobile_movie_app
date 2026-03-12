@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-03-12
+
+### Added
+
+- ⭐ **Movie Star Rating** — users can rate any saved movie 1–5 stars directly in the Saved tab or from the Movie Detail page. Ratings are persisted in Appwrite and synced across all lists via Optimistic UI (local state updates immediately, Appwrite write happens asynchronously).
+- 🕑 **AI & Keyword Search History** — last 5 searches for each mode are persisted to AsyncStorage. A toggle button reveals a history panel with chips (AI) and list items (keyword). Individual histories can be cleared independently.
+- 📤 **Native Share Button** — a share icon on every Movie Detail page uses the React Native `Share` API to let users share a movie title + TMDB link via any installed app.
+- 💀 **Skeleton Loading for AI Search** — while Gemini is processing, a grid of 9 animated placeholder cards provides a rich loading state instead of a bare spinner.
+- 🧹 **Clear AI Results button** — a one-tap button dismisses the AI result set, resets the search bar, and reloads the default movie feed.
+
+### Changed
+
+- ⚡ **Parallelized AI fetch pipeline** — `topMovie` and all 9 `otherMovies` TMDB lookups are now dispatched in a single `Promise.all`, reducing AI search wall-clock time by ~70% compared to the previous sequential approach.
+- 🗃️ **Typed `Movie` interface** — replaced all `any` types for movie objects across `MovieCard.tsx`, `search.tsx`, `home.tsx`, and `appwrite.ts` with a shared `Movie` interface in `interfaces/`.
+- 💬 **Improved error logging** — `fetchMovieByTitle` now logs the specific failing title, making AI pipeline debugging significantly faster.
+- 🔑 **Search cache cleared on logout** — `globalSearchCache` is now reset when the user logs out, preventing stale data leaking across sessions on shared devices.
+- 📝 **Portfolio-ready API comments** — `services/ai.ts` and `services/api.ts` now include explicit `NOTE:` comments explaining the client-side key exposure trade-off for a CV/portfolio context.
+- `returnKeyType="search"` added to AI search input so the keyboard shows a Search button.
+- N/A formatting for `budget` and `revenue` on the Movie Detail page.
+- Removed unused `onClear` prop from `SearchBar` interface.
+
+### Fixed
+
+- 🗑️ Deleted `test_animation.ts` scratch file left in `components/`.
+- 🔤 Resolved TypeScript case-sensitivity conflict between `StarRating.tsx` and `Starrating.tsx` by renaming the component to `MovieRating.tsx`.
+
 ## [1.4.0] - 2026-03-05
 
 ### Added

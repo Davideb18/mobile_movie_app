@@ -3,16 +3,20 @@ import { Link } from "expo-router";
 import React from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
+interface MovieCardProps extends Partial<Movie> {
+  className?: string;
+}
+
 const MovieCard = ({
   id,
   poster_path,
   title,
-  vote_average,
+  vote_average = 0,
   release_date,
   className,
-}: any) => {
+}: MovieCardProps) => {
   return (
-    <Link href={`/movies/${id}`} asChild prefetch={true}>
+    <Link href={`/movies/${id}`} asChild>
       <TouchableOpacity className={className || "w-[30%]"}>
         <Image
           source={{
