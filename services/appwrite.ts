@@ -1,10 +1,10 @@
 import {
-    Account,
-    Avatars,
-    Client,
-    Databases,
-    ID,
-    Query,
+  Account,
+  Avatars,
+  Client,
+  Databases,
+  ID,
+  Query,
 } from "react-native-appwrite";
 
 const DATABASE_ID = process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!;
@@ -23,6 +23,7 @@ const database = new Databases(client);
 export const account = new Account(client);
 export const avatars = new Avatars(client);
 
+// Create a new user in AppWrite
 export const createUser = async (
   email: string,
   password: string,
@@ -63,6 +64,7 @@ export const createUser = async (
   }
 };
 
+// Sign in to AppWrite
 export const signIn = async (email: string, password: string) => {
   try {
     const sessione = await account.createEmailPasswordSession(email, password);
@@ -73,6 +75,7 @@ export const signIn = async (email: string, password: string) => {
   }
 };
 
+// Get the user from AppWrite
 export const getCurrentUser = async () => {
   try {
     // check if there's already an active session
@@ -95,6 +98,7 @@ export const getCurrentUser = async () => {
   }
 };
 
+// Logout from AppWrite
 export const logout = async () => {
   try {
     const session = await account.deleteSession("current");
@@ -104,6 +108,7 @@ export const logout = async () => {
   }
 };
 
+// Saved movies from AppWrite
 export const savemovieToAppwrite = async (
   accountId: string,
   movie: any,
@@ -127,6 +132,7 @@ export const savemovieToAppwrite = async (
   }
 };
 
+// Get saved movies from AppWrite
 export const getSavedMoviesFromAppwrite = async (accountId: string) => {
   try {
     const result = await database.listDocuments(
@@ -152,6 +158,8 @@ export const getSavedMoviesFromAppwrite = async (accountId: string) => {
           const movieObj = JSON.parse(doc.movieDetails);
           // attach the Appwrite creation timestamp so we can use it for monthly stats
           movieObj.$createdAt = doc.$createdAt;
+          movieObj.$rating = doc.rating ?? 0;
+          movieObj.$docId = doc.$id;
           dictionary[doc.category].push(movieObj);
         } catch (e) {}
       }
@@ -162,6 +170,7 @@ export const getSavedMoviesFromAppwrite = async (accountId: string) => {
   }
 };
 
+// Delete movie from AppWrite
 export const removeMovieFromAppwrite = async (
   accountId: string,
   movieId: number,
@@ -192,6 +201,7 @@ export const removeMovieFromAppwrite = async (
   }
 };
 
+// Delete a category from appwrite
 export const deleteCategoryFromAppwrite = async (
   accountId: string,
   category: string,
@@ -213,6 +223,37 @@ export const deleteCategoryFromAppwrite = async (
         ),
       );
       await Promise.all(deletePromises);
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Save or update a star rating for a saved movie
+export const rateMovieInAppwrite = async (
+  accountId: string,
+  movieId: number,
+  category: string,
+  rating: number,
+) => {
+  try {
+    // Find the existing document
+    const result = await database.listDocuments(
+      DATABASE_ID,
+      SAVED_MOVIES_COLLECTION_ID,
+      [
+        Query.equal("accountId", accountId),
+        Query.equal("movieId", movieId),
+        Query.equal("category", category),
+      ],
+    );
+    if (result.documents.length > 0) {
+      return await database.updateDocument(
+        DATABASE_ID,
+        SAVED_MOVIES_COLLECTION_ID,
+        result.documents[0].$id,
+        { rating },
+      );
     }
   } catch (error) {
     throw error;

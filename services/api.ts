@@ -1,5 +1,7 @@
 export const TMDB_CONFIG = {
   BASE_URL: "https://api.themoviedb.org/3",
+  // NOTE: In a production app, this API key should be hidden behind a secure backend proxy.
+  // For this portfolio CV project, it's accessed directly on the client for simplicity.
   API_KEY: process.env.EXPO_PUBLIC_MOVIE_API_KEY,
   header: {
     accept: "application/json",
@@ -7,7 +9,7 @@ export const TMDB_CONFIG = {
   },
 };
 
-export const fetchTrendingMovies = async (): Promise<any[]> => {
+export const fetchTrendingMovies = async (): Promise<Movie[]> => {
   try {
     const response = await fetch(
       `${TMDB_CONFIG.BASE_URL}/trending/movie/day?language=en-US`,
@@ -60,7 +62,7 @@ export const fetchMovies = async ({
 }: {
   query: string;
   page?: number;
-}) => {
+}): Promise<Movie[]> => {
   let endpoint = `${TMDB_CONFIG.BASE_URL}/discover/movie?sort_by=popularity.desc&page=${page}`;
 
   if (query) {
@@ -118,7 +120,9 @@ export const fetchMovieDetails = async (
   }
 };
 
-export const fetchMovieByTitle = async (title: string): Promise<any> => {
+export const fetchMovieByTitle = async (
+  title: string,
+): Promise<Movie | null> => {
   try {
     const endpoint = `${TMDB_CONFIG.BASE_URL}/search/movie?query=${encodeURIComponent(title)}&page=1`;
     const response = await fetch(endpoint, {
@@ -132,7 +136,7 @@ export const fetchMovieByTitle = async (title: string): Promise<any> => {
     const data = await response.json();
     return data.results?.[0] || null; // return the top match
   } catch (error) {
-    console.error("Error fetching movie by title:", error);
+    console.error(`Error fetching movie by title ("${title}"):`, error);
     return null;
   }
 };

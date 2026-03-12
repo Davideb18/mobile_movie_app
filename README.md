@@ -1,89 +1,112 @@
-# 🎬 Mobile Movie App
+# 🎬 Movie Discovery App
 
-A powerful and beautiful mobile application for browsing, searching, and saving movies, built with **React Native**, **Expo**, **Appwrite**, and **Google Gemini AI**.
+A cross-platform mobile app for browsing, discovering, and saving movies — featuring **Google Gemini AI-powered search**, real-time **Appwrite** backend, and a polished premium dark UI.
+
+---
 
 ## ✨ Features
 
-- **🌙 Premium Dark & Minimalist UI**: A sleek edge-to-edge dark theme with pure blacks, muted text, and smooth rounded corners.
-- **✨ Fluid Animations**: Physics-based slide-up forms and transitions powered by `react-native-reanimated`.
-- **🔥 Trending Movies**: View the latest popular movies with real-time updates.
-- **🔍 Smart Search**: Instantly search for movies by title or genre, with results cached between tab switches.
-- **🤖 AI Vibe Search**: Describe a scene, mood, or vibe in natural language (Italian or English), and Google Gemini recommends the perfect match — complete with a tailored explanation and 9 alternative picks.
-- **📱 Responsive Design**: Optimized for both iOS and Android devices with native-feeling Tab Navigation.
-- **📂 Dynamic Custom Categories**: Create, manage, and delete custom collections to save movies exactly how you want.
-- **💾 Cloud Synchronization**: Powered by Appwrite for robust real-time data handling and persistence of your collections.
-- **📊 User Profile & Stats**: Track total and monthly watch time, and browse your top genres with direct search links.
-- **⚡ Aggressive Caching**: Images are cached via `expo-image`, routes are prefetched on render, and search state persists across tab navigation.
+| Category | Feature |
+|---|---|
+| 🔍 Search | Keyword search with smart genre routing (20+ genres → TMDB `/discover`) |
+| 🤖 AI Search | Natural language vibe search via Gemini 2.5 Flash (IT/EN), with a hero result card + 9 alternatives |
+| 💾 Collections | Create, manage, and delete custom watchlists backed by Appwrite |
+| ⭐ Ratings | 1–5 star rating per saved movie, persisted to Appwrite with Optimistic UI |
+| 📤 Share | Share any movie via native Share API |
+| 📊 Profile Stats | Total & monthly watch time (horizontal swipeable cards), top genres with search shortcuts |
+| 🕑 Search History | Last 5 AI and keyword queries persisted in AsyncStorage with LRU eviction |
+| ⚡ Performance | Parallel API calls (`Promise.all`), 500ms debounce, session-scoped search cache, 3-page home pre-fetch (60 movies) |
+| 📳 Haptics | Native haptic feedback (`expo-haptics`) on save, AI submit, tab press, and remove |
+| 🔐 Auth | Email/password auth via Appwrite with session restore on launch |
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Framework**: [Expo](https://expo.dev/) & [React Native](https://reactnative.dev/)
-- **Styling**: [NativeWind](https://www.nativewind.dev/) (TailwindCSS)
-- **Backend Service**: [Appwrite](https://appwrite.io/)
-- **Navigation**: [Expo Router](https://docs.expo.dev/router/introduction/)
-- **AI**: [Google Gemini API](https://aistudio.google.com/)
-- **Movie Data**: [TMDB API](https://developer.themoviedb.org/)
-- **State Management**: React Context API
-- **Animations**: React Native Reanimated
+| Layer | Technology |
+|---|---|
+| Framework | [Expo](https://expo.dev/) + [React Native](https://reactnative.dev/) |
+| Language | TypeScript |
+| Styling | [NativeWind](https://www.nativewind.dev/) (TailwindCSS for RN) |
+| Navigation | [Expo Router](https://docs.expo.dev/router/introduction/) (file-based) |
+| Backend | [Appwrite](https://appwrite.io/) (Auth, Database, Avatars) |
+| AI | [Google Gemini 2.5 Flash](https://aistudio.google.com/) |
+| Movie Data | [TMDB API v3](https://developer.themoviedb.org/) |
+| State | React Context API |
+| Local Storage | AsyncStorage |
+| Animations | React Native Reanimated |
+
+---
 
 ## 🚀 Getting Started
 
-Follow these instructions to get a copy of the project up and running on your local machine.
-
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) installed on your machine.
-- [Expo Go](https://expo.dev/client) app installed on your physical device, or an Android/iOS emulator.
+- [Node.js](https://nodejs.org/) (v18+)
+- [Expo Go](https://expo.dev/client) on your phone, or an iOS/Android emulator
 
 ### Installation
 
-1.  **Clone the repository**
+1. **Clone the repository**
 
     ```bash
     git clone https://github.com/Davideb18/mobile_movie_app.git
     cd mobile_movie_app
     ```
 
-2.  **Install dependencies**
+2. **Install dependencies**
 
     ```bash
     npm install
     ```
 
-3.  **Environment Configuration**
-
-    Copy the example environment file to create your local declaration:
+3. **Environment Configuration**
 
     ```bash
     cp .env.example .env
     ```
 
-    Then, open `.env` and fill in your credentials:
-    - `EXPO_PUBLIC_MOVIE_API_KEY` — from [TMDB](https://developer.themoviedb.org/)
-    - `EXPO_PUBLIC_GEMINI_API_KEY` — from [Google AI Studio](https://aistudio.google.com/) (free tier available)
-    - Appwrite credentials (refer to `.env.example` for all required keys)
+    Fill in your `.env`:
 
-4.  **Run the app**
+    | Variable | Where to get it |
+    |---|---|
+    | `EXPO_PUBLIC_MOVIE_API_KEY` | [TMDB Developer Portal](https://developer.themoviedb.org/) |
+    | `EXPO_PUBLIC_GEMINI_API_KEY` | [Google AI Studio](https://aistudio.google.com/) (free tier) |
+    | `EXPO_PUBLIC_APPWRITE_*` | Your [Appwrite](https://appwrite.io/) project settings |
+
+4. **Run the app**
+
     ```bash
     npx expo start
     ```
 
+    Scan the QR code with Expo Go, or press `i`/`a` for iOS/Android simulator.
+
+---
+
 ## 📂 Project Structure
 
-```bash
+```
 mobile_movie_app/
-├── app/                  # Application screens and routing (Expo Router)
-├── components/           # Reusable UI components (GlassView, FormField, etc.)
-├── constants/            # Global constants (icons, images, theme)
-├── context/              # React Context for state management (Global, SavedMovies)
-├── services/             # API services (Appwrite, TMDB)
-├── assets/               # Static assets (fonts, images)
-└── ...
+├── app/
+│   ├── (auth)/           # Sign-in and Sign-up screens
+│   ├── (tabs)/           # Tab screens: Home, Search, Saved, Profile
+│   └── movies/[id].tsx   # Movie detail bottom-sheet modal
+├── components/           # Reusable UI: MovieCard, SearchBar, MovieRating, etc.
+├── constants/            # Icons, images, theme tokens
+├── context/              # GlobalProvider (auth), SavedMoviesContext (collections)
+├── interfaces/           # Shared TypeScript types (Movie, MovieDetails)
+├── services/             # API layers: appwrite.ts, api.ts, ai.ts, storage.ts
+└── assets/               # Fonts, images
 ```
 
-## 🤝 Contributing
+---
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## ⚠️ Security Note
+
+For this portfolio project, API keys are accessed directly on the client via `EXPO_PUBLIC_*` env variables (which get embedded in the JS bundle). In a production app, these would be proxied through a secure backend. Comments in `services/ai.ts` and `services/api.ts` document this trade-off explicitly.
+
+---
 
 ## 📄 License
 

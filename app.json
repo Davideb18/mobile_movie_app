@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "movie_app",
-    "slug": "mobile_movie_app",
+    "slug": "mobile-movie-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
@@ -44,6 +44,19 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "44acc030-27c8-4197-b3de-5376c0b4a519"
+      }
+    },
+    "owner": "davidebsws-organization",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/44acc030-27c8-4197-b3de-5376c0b4a519"
     }
   }
 }

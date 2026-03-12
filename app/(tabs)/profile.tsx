@@ -17,6 +17,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { clearSearchCache } from "./search";
 
 const Profile = () => {
   const { user, setUser, setIsLogged } = useGlobalContext();
@@ -116,6 +117,7 @@ const Profile = () => {
     await logout();
     setUser(null);
     setIsLogged(false);
+    clearSearchCache();
     router.replace("/sign-in");
   };
 

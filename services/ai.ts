@@ -7,6 +7,8 @@ export interface AIRecommendationResult {
 export const fetchAIRecommendations = async (
   query: string,
 ): Promise<AIRecommendationResult> => {
+  // NOTE: In a production app, this API key should be hidden behind a secure backend proxy.
+  // For this portfolio CV project, it's accessed directly on the client for simplicity.
   const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 
   if (!apiKey) {

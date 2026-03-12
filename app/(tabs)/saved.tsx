@@ -1,3 +1,4 @@
+import MovieRating from "@/components/MovieRating";
 import { icons } from "@/constants/icons";
 import { useSavedMovies } from "@/context/SavedMoviesContext";
 import { Link } from "expo-router";
@@ -18,7 +19,8 @@ import {
 } from "react-native";
 
 const Saved = () => {
-  const { savedMovies, deleteCategory, createCategory } = useSavedMovies();
+  const { savedMovies, deleteCategory, createCategory, rateMovie } =
+    useSavedMovies();
   const [isCreating, setIsCreating] = useState(false);
   const [newCategory, setNewCategory] = useState("");
 
@@ -51,7 +53,7 @@ const Saved = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           minHeight: "100%",
-          paddingBottom: 10,
+          paddingBottom: 150,
           paddingTop: 40,
         }}
       >
@@ -108,25 +110,34 @@ const Saved = () => {
                 )}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
-                  <Link href={`/movies/${item.id}`} asChild>
-                    <TouchableOpacity className="mr-5 w-36">
-                      <Image
-                        source={{
-                          uri: item.poster_path
-                            ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                            : "https://placehold.co/600x400/1a1a1a/ffffff.png",
-                        }}
-                        className="w-full h-52 rounded-2xl"
-                        resizeMode="cover"
+                  <View className="mr-5 w-36">
+                    <Link href={`/movies/${item.id}`} asChild>
+                      <TouchableOpacity>
+                        <Image
+                          source={{
+                            uri: item.poster_path
+                              ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                              : "https://placehold.co/600x400/1a1a1a/ffffff.png",
+                          }}
+                          className="w-full h-52 rounded-2xl"
+                          resizeMode="cover"
+                        />
+                        <Text
+                          className="text-sm font-bold text-text mt-2 text-left"
+                          numberOfLines={1}
+                        >
+                          {item.title}
+                        </Text>
+                      </TouchableOpacity>
+                    </Link>
+                    {category === "Already Watched" && (
+                      <MovieRating
+                        rating={item.$rating ?? 0}
+                        onRate={(stars) => rateMovie(item.id, category, stars)}
+                        gap={15}
                       />
-                      <Text
-                        className="text-sm font-bold text-text mt-2 text-left"
-                        numberOfLines={1}
-                      >
-                        {item.title}
-                      </Text>
-                    </TouchableOpacity>
-                  </Link>
+                    )}
+                  </View>
                 )}
               />
             </View>

@@ -17,7 +17,7 @@ export default function Index() {
     error: trendingError,
   } = useFetch(fetchTrendingMovies);
 
-  const [movies, setMovies] = useState<any[]>([]);
+  const [movies, setMovies] = useState<Movie[]>([]);
   const [page, setPage] = useState(1);
   const [loadingTop, setLoadingTop] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -28,7 +28,11 @@ export default function Index() {
     else setLoadingMore(true);
 
     try {
-      // batch-fetch 3 pages in parallel to get 60 movies at a time
+      // PERFORMANCE OPTIMIZATION:
+      // Instead of fetching 1 page (20 movies) and waiting for the user to scroll down very frequently,
+      // we batch-fetch 3 pages in parallel to get 60 movies at once.
+      // This is ideal for infinite scroll feeds as it drastically reduces the number of loading spinners
+      // the user sees while scrolling rapidly, improving the perceived performance.
       const [res1, res2, res3] = await Promise.all([
         fetchMovies({ query: "", page: startPage }),
         fetchMovies({ query: "", page: startPage + 1 }),

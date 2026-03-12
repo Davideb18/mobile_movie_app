@@ -1,7 +1,10 @@
+import MovieRating from "@/components/MovieRating";
 import { icons } from "@/constants/icons";
 import { useSavedMovies } from "@/context/SavedMoviesContext";
 import { fetchMovieDetails } from "@/services/api";
 import useFetch from "@/services/useFetch";
+import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -12,6 +15,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  Share,
   Text,
   TextInput,
   TouchableOpacity,
@@ -45,7 +49,7 @@ const MovieDetails = () => {
 
   const [isCreating, setIsCreating] = useState(false);
 
-  const { savedMovies, saveMovie, removeMovie, createCategory } =
+  const { savedMovies, saveMovie, removeMovie, createCategory, rateMovie } =
     useSavedMovies();
 
   if (loading || !movie) {
@@ -91,17 +95,63 @@ const MovieDetails = () => {
               style={{ width: 24, height: 24, tintColor: "#FFFFFF" }}
             />
           </Pressable>
+
+          {/* share button */}
+          <Pressable
+            onPress={async () => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              try {
+                if (!movie) return;
+                await Share.share({
+                  message: `Check out this movie I found: ${movie.title}! 🍿\nFind more details on TMDB: https://www.themoviedb.org/movie/${movie.id}`,
+                });
+              } catch (error) {
+                console.log("Error sharing", error);
+              }
+            }}
+            className="absolute top-6 right-[88px] p-3 rounded-full border border-white/10 shadow-lg bg-surface/80 h-[50px] w-[50px] items-center justify-center"
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.7 : 1,
+            })}
+          >
+            <Ionicons
+              name="share-social-outline"
+              size={22}
+              color="#FFFFFF"
+              style={{ marginLeft: -2 }}
+            />
+          </Pressable>
         </View>
 
         <View className="flex-col items-start justify-center mt-6 px-5">
-          <Text className="text-text font-pbold text-2xl">{movie?.title}</Text>
+          <Text className="text-text font-bold text-3xl">{movie?.title}</Text>
 
+          {Object.values(savedMovies).some((list) =>
+            list.some((m) => m.id === movie.id),
+          ) && (
+            <View className="mt-2 text-white">
+              <MovieRating
+                rating={
+                  Object.values(savedMovies)
+                    .flat()
+                    .find((m) => m.id === movie.id)?.$rating ?? 0
+                }
+                onRate={(stars) => {
+                  const category = Object.keys(savedMovies).find((cat) =>
+                    savedMovies[cat].some((m) => m.id === movie.id),
+                  );
+                  if (category) rateMovie(movie.id, category, stars);
+                }}
+                size={24}
+              />
+            </View>
+          )}
           <View className="flex-row items-center gap-x-3 mt-3">
             <Text className="text-textMuted font-pmedium text-sm">
-              {movie?.release_date?.split("-")[0]}
+              Years: {movie?.release_date?.split("-")[0]}
             </Text>
             <Text className="text-textMuted font-pmedium text-sm">
-              {movie?.runtime}m
+              Duration: {movie?.runtime}m
             </Text>
           </View>
 
@@ -126,22 +176,18 @@ const MovieDetails = () => {
           />
 
           <View className="flex flex-row justify-between w-[90%] flex-wrap">
-            <MovieInfo
-              label="Budget"
-              value={
-                movie?.budget && movie.budget > 0
-                  ? `$${Math.round(movie.budget / 1_000_000)}M`
-                  : "N/A"
-              }
-            />
-            <MovieInfo
-              label="Revenue"
-              value={
-                movie?.revenue && movie.revenue > 0
-                  ? `$${Math.round(movie.revenue / 1_000_000)}M`
-                  : "N/A"
-              }
-            />
+            {movie?.budget && movie.budget > 0 ? (
+              <MovieInfo
+                label="Budget"
+                value={`$${Math.round(movie.budget / 1_000_000)}M`}
+              />
+            ) : null}
+            {movie?.revenue && movie.revenue > 0 ? (
+              <MovieInfo
+                label="Revenue"
+                value={`$${Math.round(movie.revenue / 1_000_000)}M`}
+              />
+            ) : null}
           </View>
 
           <MovieInfo
@@ -219,6 +265,7 @@ const MovieDetails = () => {
                       opacity: pressed ? 0.7 : 1,
                     })}
                     onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                       if (isSaved) {
                         removeMovie(movie!.id, category);
                       } else {

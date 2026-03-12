@@ -1,15 +1,16 @@
 import {
-    createContext,
-    ReactNode,
-    useContext,
-    useEffect,
-    useState,
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
 } from "react";
 import {
-    deleteCategoryFromAppwrite,
-    getSavedMoviesFromAppwrite,
-    removeMovieFromAppwrite,
-    savemovieToAppwrite,
+  deleteCategoryFromAppwrite,
+  getSavedMoviesFromAppwrite,
+  rateMovieInAppwrite,
+  removeMovieFromAppwrite,
+  savemovieToAppwrite,
 } from "../services/appwrite";
 import { useGlobalContext } from "./GlobalProvider";
 
@@ -19,6 +20,7 @@ interface SavedMoviesContextType {
   saveMovie: (movie: any, category: string) => void;
 
   removeMovie: (movieId: number, category: string) => void;
+  rateMovie: (movieId: number, category: string, rating: number) => void;
   createCategory: (category: string) => void;
 
   deleteCategory: (category: string) => void;
@@ -139,6 +141,30 @@ export const SavedMoviesProvider = ({ children }: SavedMoviesProviderProps) => {
         removeMovie,
         createCategory,
         deleteCategory,
+        rateMovie: async (
+          movieId: number,
+          category: string,
+          rating: number,
+        ) => {
+          setSavedMovies((prev) => {
+            const newState = { ...prev };
+            // Update the rating in EVERY category where this movie exists
+            Object.keys(newState).forEach((cat) => {
+              newState[cat] = newState[cat].map((m) =>
+                m.id === movieId ? { ...m, $rating: rating } : m,
+              );
+            });
+            return newState;
+          });
+
+          if (user) {
+            try {
+              await rateMovieInAppwrite(user.$id, movieId, category, rating);
+            } catch (error) {
+              // silent fail
+            }
+          }
+        },
       }}
     >
       {children}

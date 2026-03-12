@@ -1,4 +1,5 @@
 import { icons } from "@/constants/icons";
+import * as Haptics from "expo-haptics";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Image, Text, View } from "react-native";
@@ -70,6 +71,11 @@ const _Layout = () => {
             <TabIcon focused={focused} icon={icons.home} title="Home" />
           ),
         }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          },
+        }}
       />
 
       {/* --- TAB SEARCH --- */}
@@ -81,6 +87,11 @@ const _Layout = () => {
           tabBarIcon: ({ focused }) => (
             <TabIcon focused={focused} icon={icons.search} title="Search" />
           ),
+        }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          },
         }}
       />
 
@@ -94,6 +105,11 @@ const _Layout = () => {
             <TabIcon focused={focused} icon={icons.save} title="Saved" />
           ),
         }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          },
+        }}
       />
 
       {/* --- TAB PROFILE --- */}
@@ -105,6 +121,11 @@ const _Layout = () => {
           tabBarIcon: ({ focused }) => (
             <TabIcon focused={focused} icon={icons.person} title="Profile" />
           ),
+        }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          },
         }}
       />
     </Tabs>
